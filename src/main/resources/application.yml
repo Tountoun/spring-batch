@@ -1,0 +1,15 @@
+server:
+  port: 8089
+
+spring:
+  batch:
+    job:
+      enabled: false
+
+gofar:
+  customer:
+    batch:
+      cron-expression: 0/30 * * * * *
+
+  batch:
+    xml_input_file: database.xml
