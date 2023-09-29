@@ -1,6 +1,7 @@
-package com.gofar.springbatch.utils;
+package com.gofar.springbatch.config;
 
 import com.gofar.springbatch.entity.Customer;
+import com.gofar.springbatch.utils.StartDataProcess;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.support.IteratorItemReader;
 

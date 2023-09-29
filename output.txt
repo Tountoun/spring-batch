@@ -1,1 +1,0 @@
-Customer(id=9, firstName=fecbdfefed, lastName=efdbdadcf, birthDay=2023-09-28, creationDate=2023-09-28, transactions=5)

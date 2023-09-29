@@ -1,10 +1,11 @@
-package com.gofar.springbatch.utils;
+package com.gofar.springbatch.config;
 
 import com.gofar.springbatch.entity.Customer;
 import org.springframework.batch.item.ItemWriter;
 
 import javax.annotation.PreDestroy;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 
 
@@ -16,8 +17,11 @@ public class CustomerWriter implements ItemWriter<Customer>, Closeable {
         OutputStream outputStream = null;
 
         try {
-            outputStream = new FileOutputStream("output.txt");
-        } catch (FileNotFoundException e) {
+            File file = new File("src/main/resources/output.txt");
+            if (!file.exists())
+                file.createNewFile();
+            outputStream = Files.newOutputStream(file.toPath());
+        } catch (IOException e) {
             outputStream = System.out;
         }
         this.writer = new PrintWriter(outputStream);

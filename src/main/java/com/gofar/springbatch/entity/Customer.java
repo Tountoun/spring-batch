@@ -35,4 +35,16 @@ public class Customer {
 
     @Column(name = "CUSTRS")
     private int transactions;
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", birthDay=" + birthDay +
+                ", creationDate=" + creationDate +
+                ", transactions=" + transactions +
+                '}';
+    }
 }
