@@ -1,7 +1,9 @@
 package com.gofar.springbatch.config;
 
 import com.gofar.springbatch.entity.Customer;
-import lombok.extern.slf4j.Slf4j;
+import com.gofar.springbatch.repository.CustomerRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -10,6 +12,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.validator.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -20,9 +23,9 @@ import org.springframework.scheduling.annotation.Scheduled;
  * Class for job configuration
  */
 @Configuration
-@Slf4j
 public class CustomerReportJobConfig {
 
+    private static final Logger LOG = LoggerFactory.getLogger(CustomerReportJobConfig.class);
     private static final String CHUNK_STEP = "chunk-step";
 
     private static final String JOB_NAME = "customerReportJob";
@@ -32,6 +35,9 @@ public class CustomerReportJobConfig {
 
     @Autowired
     private StepBuilderFactory stepBuilderFactory;
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
     @Autowired
     private JobLauncher jobLauncher;
@@ -45,7 +51,7 @@ public class CustomerReportJobConfig {
                 reportJob(),
                 jobParameters
         );
-        log.info("Job: name = {} id = {}",execution.getJobInstance().getJobName(), execution.getId());
+        LOG.info("Job: name = {} id = {}", execution.getJobInstance().getJobName(), execution.getId());
     }
 
     @Bean
@@ -65,7 +71,7 @@ public class CustomerReportJobConfig {
                 .<Customer, Customer>chunk(20)
                 .reader(itemReader())
                 .processor(itemProcessor())
-                .writer(itemWriter())
+                .writer(repositoryItemWriter())
                 .build();
     }
 
@@ -90,5 +96,13 @@ public class CustomerReportJobConfig {
     @Bean
     public ItemWriter<Customer> itemWriter() {
         return new CustomerWriter();
+    }
+
+    @Bean
+    public RepositoryItemWriter<Customer> repositoryItemWriter() {
+        RepositoryItemWriter<Customer> writer = new RepositoryItemWriter<>();
+        writer.setRepository(customerRepository);
+        writer.setMethodName("save");
+        return writer;
     }
 }

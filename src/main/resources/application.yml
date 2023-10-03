@@ -2,14 +2,27 @@ server:
   port: 8089
 
 spring:
+  jpa:
+    show_sql: false
+    database: H2
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: create-drop
+  datasource:
+    url: jdbc:h2:mem:gofar
+    driver-class-name: org.h2.Driver
   batch:
     job:
       enabled: false
+  sql:
+    init:
+      mode: always
 
 gofar:
   customer:
     batch:
-      cron-expression: 0/30 * * * * *
+      cron-expression: 0 0/1 * * * *
 
   batch:
     xml_input_file: database.xml

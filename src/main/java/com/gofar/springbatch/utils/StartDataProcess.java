@@ -1,7 +1,9 @@
 package com.gofar.springbatch.utils;
 
 import com.gofar.springbatch.entity.Customer;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,12 +16,11 @@ import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.UUID;
 
-@Slf4j
 @Component
 public class StartDataProcess {
 
+    private static final Logger LOG = LoggerFactory.getLogger(StartDataProcess.class);
     public static String XML_FILe;
 
     public static void prepareTestData(final int amount) {
@@ -28,13 +29,14 @@ public class StartDataProcess {
 
             final Customer customer = new Customer();
             customer.setId((long) i);
-            customer.setFirstName(UUID.randomUUID().toString().replaceAll("[^a-z]", ""));
-            customer.setLastName(UUID.randomUUID().toString().replaceAll("[^a-z]", ""));
+            customer.setCode(RandomStringUtils.random(RandomStringUtils.randomNumeric(5, 7).length(),true, false));
+            customer.setFirstName(RandomStringUtils.random(RandomStringUtils.randomNumeric(5, 10).length(),true, false));
+            customer.setLastName(RandomStringUtils.random(RandomStringUtils.randomNumeric(5, 10).length(),true, false));
             customer.setBirthDay(LocalDate.now());
-            customer.setTransactions(random());
+            customer.setTransactions(RandomStringUtils.randomNumeric(0, 30).length());
             customers.add(customer);
         }
-        try (final XMLEncoder encoder = new XMLEncoder(new FileOutputStream(XML_FILe))) {
+        try (final XMLEncoder encoder = new XMLEncoder(new FileOutputStream(XML_FILe, false))) {
             encoder.setPersistenceDelegate(LocalDate.class, new PersistenceDelegate() {
                 @Override
                 protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -44,7 +46,7 @@ public class StartDataProcess {
             });
             encoder.writeObject(customers);
         } catch (final FileNotFoundException e) {
-            log.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             System.exit(-1);
         }
     }

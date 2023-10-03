@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+database.xml
+src/main/resources/output.txt
+
 ### STS ###
 .apt_generated
 .classpath
