@@ -28,8 +28,7 @@ public class StartDataProcess {
         for (int i = 1; i <= amount; i++) {
 
             final Customer customer = new Customer();
-            customer.setId((long) i);
-            customer.setCode(RandomStringUtils.random(RandomStringUtils.randomNumeric(5, 7).length(),true, false));
+            customer.setCode(RandomStringUtils.random(RandomStringUtils.randomNumeric(5, 7).length(),true, true));
             customer.setFirstName(RandomStringUtils.random(RandomStringUtils.randomNumeric(5, 10).length(),true, false));
             customer.setLastName(RandomStringUtils.random(RandomStringUtils.randomNumeric(5, 10).length(),true, false));
             customer.setBirthDay(LocalDate.now());

@@ -4,25 +4,25 @@ server:
 spring:
   jpa:
     show_sql: false
-    database: H2
     hibernate:
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      ddl-auto: create-drop
+      ddl-auto: create
   datasource:
-    url: jdbc:h2:mem:gofar
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://localhost:3306/batch
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
   batch:
+    jdbc:
+      initialize-schema: always
     job:
       enabled: false
-  sql:
-    init:
-      mode: always
 
 gofar:
   customer:
     batch:
-      cron-expression: 0 0/1 * * * *
+      cron-expression: 0/30 * * * * *
 
   batch:
     xml_input_file: database.xml
+    csv:
+      output: gof-customers.csv

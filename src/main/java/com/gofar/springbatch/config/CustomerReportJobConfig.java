@@ -9,15 +9,26 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.RepositoryItemWriter;
-import org.springframework.batch.item.validator.ValidationException;
+import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
+import org.springframework.batch.item.file.FlatFileItemWriter;
+import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
+import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class for job configuration
@@ -39,6 +50,9 @@ public class CustomerReportJobConfig {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Value("${gofar.batch.csv.output}")
+    private String csvFileName;
+
     @Autowired
     private JobLauncher jobLauncher;
 
@@ -57,7 +71,9 @@ public class CustomerReportJobConfig {
     @Bean
     public Job reportJob() {
         return jobBuilderFactory.get(JOB_NAME)
+                .incrementer(new RunIdIncrementer())
                 .start(chunkStep())
+                .next(databaseToCsvStep())
                 .build();
     }
 
@@ -75,6 +91,16 @@ public class CustomerReportJobConfig {
                 .build();
     }
 
+    @Bean
+    public Step databaseToCsvStep() {
+        return stepBuilderFactory.get("databaseToCsvStep")
+                .<Customer, Customer>chunk(20)
+                .reader(repositoryItemReader())
+                .processor(csvItemProcessor())
+                .writer(csvItemWriter())
+                .build();
+    }
+
     @StepScope
     @Bean
     public ItemReader<Customer> itemReader() {
@@ -85,13 +111,22 @@ public class CustomerReportJobConfig {
     @Bean
     public ItemProcessor<Customer, Customer> itemProcessor() {
         return (customer) -> {
-            if (customer.getTransactions() == 0) {
-                throw new ValidationException("Customer has no transaction");
+            if (customer.getTransactions() != 0 && !customerRepository.existsByCode(customer.getCode())) {
+                return customer;
             }
-            return customer;
+            return null;
         };
     }
-
+    @StepScope
+    @Bean
+    public ItemProcessor<Customer, Customer> csvItemProcessor() {
+        return (customer) -> {
+            if (customer.getTransactions() != 0) {
+                return customer;
+            }
+            return null;
+        };
+    }
     @StepScope
     @Bean
     public ItemWriter<Customer> itemWriter() {
@@ -104,5 +139,38 @@ public class CustomerReportJobConfig {
         writer.setRepository(customerRepository);
         writer.setMethodName("save");
         return writer;
+    }
+
+    @Bean
+    public FlatFileItemWriter<Customer> csvItemWriter() {
+        FlatFileItemWriter<Customer> itemWriter = new FlatFileItemWriter<>();
+        itemWriter.setResource(new FileSystemResource(csvFileName));
+        itemWriter.setEncoding("UTF-8");
+        itemWriter.setLineAggregator(getLineAggregator());
+        return itemWriter;
+    }
+
+    @Bean
+    public RepositoryItemReader<Customer> repositoryItemReader() {
+        Map<String, Sort.Direction> sorts = new HashMap<>();
+        sorts.put("id", Sort.Direction.ASC);
+        return new RepositoryItemReaderBuilder<Customer>()
+                .name("customer-repository-reader")
+                .repository(customerRepository)
+                .methodName("findAll")
+                .pageSize(10)
+                .sorts(sorts)
+                .build();
+    }
+
+
+    private DelimitedLineAggregator<Customer> getLineAggregator() {
+        BeanWrapperFieldExtractor<Customer> extractor = new BeanWrapperFieldExtractor<>();
+        extractor.setNames(new String[]{"id", "code", "firstName", "lastName", "birthDay", "lastUpdate", "creationDate", "transactions"});
+
+        DelimitedLineAggregator<Customer> aggregator = new DelimitedLineAggregator<>();
+        aggregator.setDelimiter(",");
+        aggregator.setFieldExtractor(extractor);
+        return aggregator;
     }
 }
