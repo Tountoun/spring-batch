@@ -1,11 +1,14 @@
 package com.gofar.springbatch.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gofar.springbatch.dto.CustomerDto;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Objects;
 
 
 @Entity
@@ -53,6 +56,13 @@ public class Customer {
         this.transactions = transactions;
     }
 
+    public void update(CustomerDto customerDto) {
+        this.code = StringUtils.hasText(customerDto.getCode()) ? customerDto.getCode() : this.code;
+        this.firstName = StringUtils.hasText(customerDto.getFirstName()) ? customerDto.getFirstName() : this.firstName;
+        this.lastName = StringUtils.hasText(customerDto.getLastName()) ? customerDto.getLastName() : this.lastName;
+        this.transactions = Objects.nonNull(customerDto.getTransactions()) ? customerDto.getTransactions() : this.transactions;
+        this.birthDay = Objects.nonNull(customerDto.getBirthDay()) ? LocalDate.parse(customerDto.getBirthDay()) : this.birthDay;
+    }
     @PreUpdate
     public void persist() {
         this.lastUpdate = LocalDate.now();

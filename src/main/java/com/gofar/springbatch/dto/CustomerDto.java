@@ -2,12 +2,22 @@ package com.gofar.springbatch.dto;
 
 public class CustomerDto {
 
+    private Long identifiant;
     private String code;
     private String firstName;
     private String lastName;
     private String birthDay;
     private String creationDate;
     private String lastUpdate;
+    private int transactions;
+
+    public Long getIdentifiant() {
+        return identifiant;
+    }
+
+    public void setIdentifiant(Long id) {
+        this.identifiant = id;
+    }
 
     public String getCode() {
         return code;
@@ -55,5 +65,13 @@ public class CustomerDto {
 
     public void setLastUpdate(String lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    public int getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(int transactions) {
+        this.transactions = transactions;
     }
 }

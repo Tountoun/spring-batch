@@ -16,6 +16,7 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
+import org.springframework.batch.item.file.FlatFileHeaderCallback;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
@@ -147,7 +148,14 @@ public class CustomerReportJobConfig {
         itemWriter.setResource(new FileSystemResource(csvFileName));
         itemWriter.setEncoding("UTF-8");
         itemWriter.setLineAggregator(getLineAggregator());
+        itemWriter.setHeaderCallback(headerCallback());
         return itemWriter;
+    }
+
+    private FlatFileHeaderCallback headerCallback() {
+        return writer -> {
+          writer.write("id,code,firstname,lastname,birthday,last-update,creation-date,transactions");
+        };
     }
 
     @Bean
