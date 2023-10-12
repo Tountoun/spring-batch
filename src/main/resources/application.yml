@@ -20,7 +20,9 @@ spring:
 gofar:
   customer:
     batch:
-      cron-expression: 0/30 * * * * *
+      cron-expression:
+        load: 0/30 * * * * *
+        backup: 0 0/2 * * * *
 
   batch:
     xml_input_file: database.xml
