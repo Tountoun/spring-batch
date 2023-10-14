@@ -23,8 +23,39 @@ gofar:
       cron-expression:
         load: 0/30 * * * * *
         backup: 0 0/2 * * * *
-
   batch:
     xml_input_file: database.xml
     csv:
       output: gof-customers.csv
+
+---
+
+spring:
+  profiles:
+    active: prod
+  jpa:
+    show_sql: false
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:mysql://mysqldb:3306/batch
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+gofar:
+  customer:
+    batch:
+      cron-expression:
+        load: 0/30 * * * * *
+        backup: 0 0/2 * * * *
+  batch:
+    xml_input_file: database.xml
+    csv:
+      output: gof-customers.csv
+server:
+  port: 8089
